@@ -162,27 +162,27 @@
                     <div th:unless="${aiAnalysis == null}" class="d-flex flex-column gap-3">
                         <div>
                             <div class="section-label">Summary</div>
-                            <p class="content-text mb-0" th:text="${aiAnalysis.summary()}">Summary</p>
+                            <p class="content-text mb-0" th:text="${aiAnalysis.summary}">Summary</p>
                         </div>
                         <div>
                             <div class="section-label">Suspected root cause</div>
-                            <p class="content-text mb-0" th:text="${aiAnalysis.suspectedRootCause()}">Root cause</p>
+                            <p class="content-text mb-0" th:text="${aiAnalysis.suspectedRootCause}">Root cause</p>
                         </div>
                         <div>
                             <div class="section-label">Evidence</div>
-                            <p class="content-text mb-0" th:text="${aiAnalysis.supportingEvidence()}">Evidence</p>
+                            <p class="content-text mb-0" th:text="${aiAnalysis.supportingEvidence}">Evidence</p>
                         </div>
                         <div>
                             <div class="section-label">Recommendations</div>
-                            <p class="content-text mb-0" th:text="${aiAnalysis.recommendedTroubleshootingSteps()}">Recommendations</p>
+                            <p class="content-text mb-0" th:text="${aiAnalysis.recommendedTroubleshootingSteps}">Recommendations</p>
                         </div>
                         <div>
                             <div class="section-label">Potential impact</div>
-                            <p class="content-text mb-0" th:text="${aiAnalysis.potentialImpact()}">Impact</p>
+                            <p class="content-text mb-0" th:text="${aiAnalysis.potentialImpact}">Impact</p>
                         </div>
                         <div>
                             <div class="section-label">Confidence</div>
-                            <span class="badge rounded-pill bg-primary" th:text="${aiAnalysis.confidenceLevel()}">High</span>
+                            <span class="badge rounded-pill bg-primary" th:text="${aiAnalysis.confidenceLevel}">High</span>
                         </div>
                     </div>
                 </div>
