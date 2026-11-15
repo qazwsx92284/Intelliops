@@ -70,6 +70,20 @@ public class IncidentDetectionService {
             }
         }
 
+        Map<String, List<ParsedLogEntry>> repeatedMessages = validEntries.stream()
+                .filter(entry -> entry.serviceName() != null && !entry.serviceName().isBlank())
+                .filter(entry -> entry.message() != null && !entry.message().isBlank())
+                .collect(Collectors.groupingBy(
+                        entry -> entry.serviceName() + "|" + entry.message(),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        for (List<ParsedLogEntry> cluster : repeatedMessages.values()) {
+            if (cluster.size() >= properties.getMinErrorCount()) {
+                candidateClusters.add(cluster);
+            }
+        }
+
         List<List<ParsedLogEntry>> mergedClusters = mergeClusters(candidateClusters);
         return mergedClusters.stream()
                 .map(this::buildIncident)

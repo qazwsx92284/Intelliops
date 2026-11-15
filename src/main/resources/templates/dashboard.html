@@ -296,6 +296,11 @@
                         <textarea class="form-control" id="logText" name="logText" rows="11" placeholder="Paste application, API, or container logs here..."></textarea>
                     </div>
 
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-light sample-log-btn" data-sample="burst">Load sample burst</button>
+                        <button type="button" class="btn btn-sm btn-outline-light sample-log-btn" data-sample="trace">Load trace-linked sample</button>
+                    </div>
+
                     <button class="btn btn-primary w-100 d-flex justify-content-center align-items-center gap-2" type="submit" id="submitButton">
                         <span class="spinner-border d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
                         <span id="buttonText">Analyze logs</span>
@@ -362,6 +367,37 @@
     form.addEventListener('submit', function () {
         spinner.classList.remove('d-none');
         buttonText.textContent = 'Analyzing logs...';
+    });
+
+    document.querySelectorAll('.sample-log-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const sampleType = this.getAttribute('data-sample');
+            let sampleLog = '';
+
+            if (sampleType === 'burst') {
+                sampleLog = `2026-11-15T09:00:00Z ERROR payments-service --- Payment request failed
+traceId=4a1d8e2b-5f1a-49bc-af11-8d6c9f7f0d3e
+2026-11-15T09:00:02Z ERROR payments-service --- Payment request failed
+traceId=4a1d8e2b-5f1a-49bc-af11-8d6c9f7f0d3e
+2026-11-15T09:00:05Z ERROR payments-service --- Payment request failed
+traceId=4a1d8e2b-5f1a-49bc-af11-8d6c9f7f0d3e
+java.lang.IllegalStateException: payment failed
+    at com.example.payments.PaymentController.checkout(PaymentController.java:84)
+    at com.example.payments.PaymentService.process(PaymentService.java:41)`;
+            } else if (sampleType === 'trace') {
+                sampleLog = `2026-11-15T09:10:00Z ERROR api-gateway --- Request failed for customer lookup
+traceId=3f3d8090-5f15-4ef3-8d5d-7f0aa7d9c2a5
+2026-11-15T09:10:04Z ERROR billing-service --- Downstream timeout while charging account
+traceId=3f3d8090-5f15-4ef3-8d5d-7f0aa7d9c2a5
+2026-11-15T09:10:09Z ERROR inventory-service --- Retry loop triggered for order reconciliation
+traceId=3f3d8090-5f15-4ef3-8d5d-7f0aa7d9c2a5
+java.lang.RuntimeException: downstream timeout
+    at com.example.billing.BillingService.charge(BillingService.java:66)`;
+            }
+
+            const logTextArea = document.getElementById('logText');
+            logTextArea.value = sampleLog;
+        });
     });
 </script>
 </body>
