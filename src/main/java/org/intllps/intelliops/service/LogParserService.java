@@ -55,17 +55,32 @@ public class LogParserService {
             return List.of();
         }
 
-        String trimmed = rawContent.trim();
+        String normalized = normalizeInput(rawContent);
+        String trimmed = normalized.trim();
+        if (trimmed.isBlank()) {
+            return List.of();
+        }
+
         if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
             return List.of(parseJsonLog(trimmed));
         }
 
-        List<String> records = splitIntoLogRecords(rawContent);
+        List<String> records = splitIntoLogRecords(trimmed);
         List<ParsedLogEntry> parsedEntries = new ArrayList<>();
         for (String record : records) {
             parsedEntries.add(parsePlainTextRecord(record));
         }
         return parsedEntries;
+    }
+
+    private String normalizeInput(String rawContent) {
+        String cleaned = rawContent.replace("\r", "");
+        cleaned = cleaned.replaceAll("(?m)^```.*$", "");
+        cleaned = cleaned.replaceAll("(?m)^```$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*text[\\s]*$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*json[\\s]*$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*log[\\s]*$", "");
+        return cleaned;
     }
 
     private List<String> splitIntoLogRecords(String rawContent) {

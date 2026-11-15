@@ -208,12 +208,25 @@ public class DashboardController {
     private String resolveLogInput(MultipartFile logFile, String logText) {
         if (logFile != null && !logFile.isEmpty()) {
             try {
-                return new String(logFile.getBytes());
+                return sanitizeLogInput(new String(logFile.getBytes()));
             } catch (Exception ex) {
                 throw new IllegalStateException("Unable to read uploaded file: " + ex.getMessage(), ex);
             }
         }
-        return logText;
+        return sanitizeLogInput(logText);
+    }
+
+    private String sanitizeLogInput(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String cleaned = raw.replace("\r", "");
+        cleaned = cleaned.replaceAll("(?m)^```.*$", "");
+        cleaned = cleaned.replaceAll("(?m)^```$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*text[\\s]*$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*json[\\s]*$", "");
+        cleaned = cleaned.replaceAll("(?m)^[\\s]*log[\\s]*$", "");
+        return cleaned.trim();
     }
 
     private String buildIncidentContext(IncidentDetailDto incident) {

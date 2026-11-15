@@ -5,11 +5,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "intelliops.incident-detection")
 public class IncidentDetectionProperties {
 
-    private int minErrorCount = 3;
-    private int timeWindowMinutes = 10;
+    private int minErrorCount = 2;
+    private int timeWindowMinutes = 15;
     private double errorRateThreshold = 0.5;
     private int repeatedExceptionThreshold = 2;
-    private int traceIdThreshold = 2;
+    private int traceIdThreshold = 1;
 
     public int getMinErrorCount() {
         return minErrorCount;
@@ -51,4 +51,3 @@ public class IncidentDetectionProperties {
         this.traceIdThreshold = traceIdThreshold;
     }
 }
-
