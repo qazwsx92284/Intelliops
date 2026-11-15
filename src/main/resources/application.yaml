@@ -2,9 +2,9 @@ spring:
   application:
     name: IntelliOps
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/intelliops}
-    username: ${DB_USERNAME:intelliops}
-    password: ${DB_PASSWORD:intelliops}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -16,26 +16,31 @@ spring:
     open-in-view: false
   ai:
     openai:
-      api-key: ${INTELLIOPS_AI_API_KEY:${OPENAI_API_KEY:}}
-      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${INTELLIOPS_AI_API_KEY:${OPENAI_API_KEY:${OPENAI_SECRET_KEY:}}}
+      base-url: ${INTELLIOPS_AI_BASE_URL:${OPENAI_BASE_URL:https://api.openai.com}}
       chat:
         enabled: ${INTELLIOPS_AI_ENABLED:${OPENAI_ENABLED:false}}
       image:
         enabled: ${OPENAI_IMAGE_ENABLED:false}
       embedding:
         enabled: false
+      audio:
+        transcription:
+          enabled: false
+        speech:
+          enabled: false
       chat.options:
-        model: ${OPENAI_MODEL:gpt-4o-mini}
-        temperature: ${OPENAI_TEMPERATURE:0.2}
-        maxTokens: ${OPENAI_MAX_TOKENS:800}
+        model: ${INTELLIOPS_AI_MODEL:${OPENAI_MODEL:gpt-4o-mini}}
+        temperature: ${INTELLIOPS_AI_TEMPERATURE:${OPENAI_TEMPERATURE:0.2}}
+        maxTokens: ${INTELLIOPS_AI_MAX_TOKENS:${OPENAI_MAX_TOKENS:800}}
 
 server:
   port: ${SERVER_PORT:8080}
 
 intelliops:
   ai:
-    api-key: ${INTELLIOPS_AI_API_KEY:${OPENAI_API_KEY:}}
-    base-url: ${OPENAI_BASE_URL:https://api.openai.com}
-    model: ${OPENAI_MODEL:gpt-4o-mini}
-    max-tokens: ${OPENAI_MAX_TOKENS:800}
-    temperature: ${OPENAI_TEMPERATURE:0.2}
+    api-key: ${INTELLIOPS_AI_API_KEY:${OPENAI_API_KEY:${OPENAI_SECRET_KEY:}}}
+    base-url: ${INTELLIOPS_AI_BASE_URL:${OPENAI_BASE_URL:https://api.openai.com}}
+    model: ${INTELLIOPS_AI_MODEL:${OPENAI_MODEL:gpt-4o-mini}}
+    max-tokens: ${INTELLIOPS_AI_MAX_TOKENS:${OPENAI_MAX_TOKENS:800}}
+    temperature: ${INTELLIOPS_AI_TEMPERATURE:${OPENAI_TEMPERATURE:0.2}}
