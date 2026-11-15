@@ -16,9 +16,13 @@ import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class IncidentAiAnalysisService {
@@ -62,6 +66,7 @@ public class IncidentAiAnalysisService {
         }
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("Incident not found with id: " + incidentId));
+
         AiAnalysisResult result = analyzeIncident(request);
         AiAnalysis analysis = new AiAnalysis(
                 incident,
@@ -96,17 +101,17 @@ public class IncidentAiAnalysisService {
             }
             String content = response.getResult().getOutput().getText();
             return parseResponse(content);
-        } catch (RestClientException | IllegalStateException ex) {
-            throw new IllegalStateException("Failed to analyze incident with AI model: " + ex.getMessage(), ex);
+        } catch (RestClientException ex) {
+            throw new IllegalStateException("AI request timed out or the provider was unreachable: " + ex.getMessage(), ex);
+        } catch (IllegalStateException ex) {
+            throw ex;
         } catch (RuntimeException ex) {
             throw new IllegalStateException("Failed to analyze incident with AI model: " + ex.getMessage(), ex);
         }
     }
 
     public String buildPrompt(AiAnalysisRequest request) {
-        String evidence = request.relevantEvidence() == null || request.relevantEvidence().isEmpty()
-                ? "No additional evidence provided."
-                : String.join(System.lineSeparator(), request.relevantEvidence());
+        String evidence = buildRelevantEvidence(request);
 
         Map<String, Object> variables = Map.of(
                 "incidentId", request.incidentId(),
@@ -133,6 +138,22 @@ public class IncidentAiAnalysisService {
         }
     }
 
+    private String buildRelevantEvidence(AiAnalysisRequest request) {
+        if (request.relevantEvidence() == null || request.relevantEvidence().isEmpty()) {
+            return "No specific evidence was selected for analysis.";
+        }
+
+        List<String> sanitized = new ArrayList<>();
+        for (String evidence : request.relevantEvidence()) {
+            if (evidence == null || evidence.isBlank()) {
+                continue;
+            }
+            sanitized.add(evidence.trim());
+        }
+
+        return sanitized.isEmpty() ? "No specific evidence was selected for analysis." : String.join(System.lineSeparator(), sanitized);
+    }
+
     private String extractJson(String rawResponse) {
         String trimmed = rawResponse.trim();
         int firstBrace = trimmed.indexOf('{');
@@ -154,6 +175,9 @@ public class IncidentAiAnalysisService {
         if (result.suspectedRootCause() == null || result.suspectedRootCause().isBlank()) {
             throw new IllegalStateException("AI response missing suspected root cause");
         }
+        if (matchesConfirmedDiagnosis(result.suspectedRootCause())) {
+            throw new IllegalStateException("AI response must describe a suspected root cause, not a confirmed diagnosis");
+        }
         if (result.supportingEvidence() == null || result.supportingEvidence().isBlank()) {
             throw new IllegalStateException("AI response missing supporting evidence");
         }
@@ -166,5 +190,18 @@ public class IncidentAiAnalysisService {
         if (result.confidenceLevel() == null || result.confidenceLevel().isBlank()) {
             throw new IllegalStateException("AI response missing confidence");
         }
+    }
+
+    private boolean matchesConfirmedDiagnosis(String value) {
+        if (value == null) {
+            return false;
+        }
+        String lower = value.toLowerCase();
+        return lower.contains("confirmed")
+                || lower.contains("is the root cause")
+                || lower.contains("definitively caused")
+                || lower.contains("was caused by")
+                || lower.contains("diagnosis is")
+                || lower.contains("the issue is definitely");
     }
 }
